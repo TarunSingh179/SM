@@ -1,25 +1,47 @@
-# Student Management Console (SM) 🗓️
+# Advanced Inventory Management System (SM) 📦
 
-A minimalistic and effective application designed to manage and monitor a subset of student database actions. 
+A fully-featured Inventory and Stock Management application built with a Python Flask backend and a Vanilla HTML/CSS/JS frontend. It handles robust user authentication, role-based access control (Admin vs. Regular Users), stock tracking, personnel management, and low-stock alerting.
 
-## 🚀 Features
-- **Frontend Interaction:** Custom CSS styling and dynamic JavaScript handlers located in the `frontend/` directory.
-- **Backend Persistence:** Uses basic Python backends linked to a `.db` file for local testing and data structuring.
-- **Modular Data Approach:** Separated data (`datas/database.db`) vs source code endpoints (`server.py`).
+## 🚀 Key Features
+- **Dashboard Analytics:** Live overview of total products, low stock alerts, registered persons, and total inventory value.
+- **Role-Based Authentication:** Secure login system featuring 'Admin' and 'Regular User' roles to restrict sensitive actions (like adding/editing stock or personnel).
+- **Comprehensive Stock Management:** Receive, issue, edit, and remove stock items with detailed material codes, categories, units, and minimum stock levels.
+- **Stock History Tracking:** Complete audit log documenting every stock change (receive, issue, sale, edit) along with timestamps, user actions, and notes.
+- **Personnel Management:** Track employee details (Employee Code, Department, Branch, Designation, Contact Info) and associate them with stock issuance.
+- **CSV Data Export:** One-click functionality to export raw stock and personnel data securely to `.csv` format.
+- **Dynamic Frontend UI:** Single-page application (SPA) feel achieved through Vanilla JavaScript and DOM manipulation, eliminating page reloads.
 
 ## 💻 Tech Stack
-- **Backend:** Python
-- **Frontend:** HTML, CSS, JavaScript
-- **Database:** SQLite Local Data
+- **Backend:** Python, Flask, SQLAlchemy (ORM), Flask-CORS
+- **Frontend:** HTML5, CSS3, Vanilla Web Components (JavaScript), FontAwesome (Icons)
+- **Database:** SQLite (`datas/database.db`)
+
+## 🛣️ API Endpoints (Core)
+- `POST /api/register` / `POST /api/login` - Authentication routes.
+- `GET /api/stock` / `POST /api/stock/receive` / `POST /api/stock/issue` - Inventory CRUD operations.
+- `GET /api/persons` / `POST /api/persons` - Employee cataloging.
+- `GET /api/stock/history` - Auditing and transaction logs.
 
 ## 🛠️ Installation & Setup
 
-1. Install Python requirements:
+1. **Prerequisites**
+   Ensure Python 3.x is installed on your environment.
+
+2. **Package Installation**
+   Create a virtual environment (optional but recommended) and install dependencies.
    ```bash
-   pip check  # (or install any stated dependencies in requirements.txt if present)
+   pip install -r .vscode/backend/requirements.txt
    ```
-2. Navigate to your backend directory or execute from root:
+
+3. **Database Initialization**
+   The application intercepts the first request and creates the SQLite database schemas and default users automatically (`Admin` / `1234` and `user` / `user123`).
+
+4. **Running the Server**
+   Navigate to the project directory and invoke the backend server script:
    ```bash
    python .vscode/backend/server.py
    ```
-3. Access the `frontend/index.html` file using your web browser or preferred live server to view the interface.
+   *The Flask server runs on port 5000 and serves the frontend statically on `/`.*
+
+5. **Access the Application**
+   Open your browser and navigate to `http://localhost:5000` (or `http://192.168.72.144:5000` if configured on your local network).

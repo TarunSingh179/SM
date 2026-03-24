@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Inventory Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <i class="fas fa-boxes"></i>
+      <span>Inventory Manager</span>
+    </div>
+    <div class="nav-menu">
+      <a href="#" class="nav-link" onclick="showPage('dashboard')">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </a>
+      <a href="#" class="nav-link" onclick="showPage('stock')">
+        <i class="fas fa-boxes"></i> Stock
+      </a>
+      <a href="#" class="nav-link" onclick="showPage('persons')">
+        <i class="fas fa-users"></i> Persons
+      </a>
+      <a href="#" class="nav-link" onclick="showPage('history')">
+        <i class="fas fa-history"></i> History
+      </a>
+      <a href="#" class="nav-link admin-only" onclick="showPage('admin')">
+        <i class="fas fa-cog"></i> Admin
+      </a>
+      <a href="#" class="nav-link" onclick="showPage('profile')">
+        <i class="fas fa-user"></i> Profile
+      </a>
+      <button class="nav-link logout-btn" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </div>
+  </nav>
+
+  <!-- Auth Pages -->
+  <div id="auth-container" class="auth-container">
+    <!-- Login Form -->
+    <div id="login-form" class="auth-form">
+      <div class="auth-card">
+        <h2><i class="fas fa-sign-in-alt"></i> Login</h2>
+        <form onsubmit="loginUser(event)">
+          <div class="form-group">
+            <label for="login-username">Username</label>
+            <input type="text" id="login-username" required>
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+        <p class="auth-switch">
+          Don't have an account? <a href="#" onclick="toggleAuth('register')">Register</a>
+        </p>
+        <div id="login-message" class="message"></div>
+      </div>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register-form" class="auth-form hidden">
+      <div class="auth-card">
+        <h2><i class="fas fa-user-plus"></i> Register</h2>
+        <form onsubmit="registerUser(event)">
+          <div class="form-group">
+            <label for="register-username">Username</label>
+            <input type="text" id="register-username" required>
+          </div>
+          <div class="form-group">
+            <label for="register-email">Email</label>
+            <input type="email" id="register-email" required>
+          </div>
+          <div class="form-group">
+            <label for="register-fullname">Full Name</label>
+            <input type="text" id="register-fullname" required>
+          </div>
+          <div class="form-group">
+            <label for="register-password">Password</label>
+            <input type="password" id="register-password" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+        <p class="auth-switch">
+          Already have an account? <a href="#" onclick="toggleAuth('login')">Login</a>
+        </p>
+        <div id="register-message" class="message"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App Container -->
+  <div id="app-container" class="app-container hidden">
+    <!-- Dashboard -->
+    <div id="dashboard" class="page">
+      <div class="page-header">
+        <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+        <p>Welcome back, <span id="user-name">User</span>!</p>
+      </div>
+      
+      <div class="dashboard-stats">
+        <div class="stat-card">
+          <i class="fas fa-boxes"></i>
+          <h3 id="total-products">0</h3>
+          <p>Total Products</p>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-exclamation-triangle"></i>
+          <h3 id="low-stock-count">0</h3>
+          <p>Low Stock Items</p>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-users"></i>
+          <h3 id="total-persons">0</h3>
+          <p>Total Persons</p>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-chart-line"></i>
+          <h3 id="total-value">₹0</h3>
+          <p>Total Value</p>
+        </div>
+      </div>
+
+      <div class="dashboard-sections">
+        <div class="section">
+          <h3><i class="fas fa-exclamation-triangle"></i> Low Stock Alerts</h3>
+          <div id="low-stock-list" class="alert-list"></div>
+        </div>
+        
+        <div class="section">
+          <h3><i class="fas fa-clock"></i> Recent Activity</h3>
+          <div id="recent-activity" class="activity-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stock Management -->
+    <div id="stock" class="page hidden">
+      <div class="page-header">
+        <h1><i class="fas fa-boxes"></i> Stock Management</h1>
+        <div class="header-actions">
+          <button class="btn btn-primary" onclick="showAddStockModal()">
+            <i class="fas fa-plus"></i> Add Stock
+          </button>
+          <button class="btn btn-secondary" onclick="exportStock()">
+            <i class="fas fa-download"></i> Export CSV
+          </button>
+        </div>
+      </div>
+
+      <div class="filters">
+        <input type="text" id="stock-search" placeholder="Search products, material codes..." onkeyup="filterStock()">
+        <select id="category-filter" onchange="filterStock()">
+          <option value="">All Categories</option>
+        </select>
+        <select id="sort-by" onchange="filterStock()">
+          <option value="name">Sort by Name</option>
+          <option value="material_code">Sort by Material Code</option>
+          <option value="quantity">Sort by Quantity</option>
+          <option value="category">Sort by Category</option>
+        </select>
+      </div>
+
+      <div class="stock-table-container">
+        <table class="stock-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Material Code</th>
+              <th>Quantity</th>
+              <th>Unit</th>
+              <th>Price</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="stock-table-body"></tbody>
+        </table>
+      </div>
+
+      <div class="pagination" id="stock-pagination"></div>
+    </div>
+
+    <!-- Person Management -->
+    <div id="persons" class="page hidden">
+      <div class="page-header">
+        <h1><i class="fas fa-users"></i> Person Management</h1>
+        <div class="header-actions">
+          <button class="btn btn-primary admin-only" onclick="showAddPersonModal()">
+            <i class="fas fa-user-plus"></i> Add Person
+          </button>
+          <button class="btn btn-secondary" onclick="exportPersons()">
+            <i class="fas fa-download"></i> Export CSV
+          </button>
+        </div>
+      </div>
+
+      <div class="filters">
+        <input type="text" id="person-search" placeholder="Search by name, employee code..." onkeyup="filterPersons()">
+        <select id="department-filter" onchange="filterPersons()">
+          <option value="">All Departments</option>
+        </select>
+        <select id="branch-filter" onchange="filterPersons()">
+          <option value="">All Branches</option>
+        </select>
+      </div>
+
+      <div class="person-table-container">
+        <table class="person-table">
+          <thead>
+            <tr>
+              <th>Employee Code</th>
+              <th>Name</th>
+              <th>Department</th>
+              <th>Branch</th>
+              <th>Designation</th>
+              <th>Contact</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th class="admin-only">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="person-table-body"></tbody>
+        </table>
+      </div>
+
+      <div class="pagination" id="person-pagination"></div>
+    </div>
+
+    <!-- Stock History -->
+    <div id="history" class="page hidden">
+      <div class="page-header">
+        <h1><i class="fas fa-history"></i> Stock History</h1>
+      </div>
+
+      <div class="filters">
+        <select id="history-action-filter" onchange="loadHistory()">
+          <option value="">All Actions</option>
+          <option value="receive">Receive</option>
+          <option value="sale">Sale</option>
+          <option value="issue">Issue</option>
+          <option value="edit">Edit</option>
+        </select>
+        <select id="history-product-filter" onchange="loadHistory()">
+          <option value="">All Products</option>
+        </select>
+        <select id="history-person-filter" onchange="loadHistory()">
+          <option value="">All Persons</option>
+        </select>
+      </div>
+
+      <div class="history-table-container">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Product</th>
+              <th>Material Code</th>
+              <th>Action</th>
+              <th>Quantity Change</th>
+              <th>Previous</th>
+              <th>New</th>
+              <th>User</th>
+              <th>Person</th>
+              <th>Department</th>
+              <th>Branch</th>
+              <th>Reason</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body"></tbody>
+        </table>
+      </div>
+
+      <div class="pagination" id="history-pagination"></div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="admin" class="page hidden">
+      <div class="page-header">
+        <h1><i class="fas fa-cog"></i> Admin Panel</h1>
+      </div>
+
+      <div class="admin-sections">
+        <div class="section">
+          <h3><i class="fas fa-users"></i> User Management</h3>
+          <div class="user-table-container">
+            <table class="user-table">
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Full Name</th>
+                  <th>Role</th>
+                  <th>Created</th>
+                  <th>Last Login</th>
+                </tr>
+              </thead>
+              <tbody id="user-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3><i class="fas fa-chart-bar"></i> System Statistics</h3>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-label">Total Users:</span>
+              <span id="total-users" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Total Products:</span>
+              <span id="admin-total-products" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Total Persons:</span>
+              <span id="admin-total-persons" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Low Stock Items:</span>
+              <span id="admin-low-stock" class="stat-value">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile -->
+    <div id="profile" class="page hidden">
+      <div class="page-header">
+        <h1><i class="fas fa-user"></i> Profile</h1>
+      </div>
+
+      <div class="profile-container">
+        <div class="profile-card">
+          <h3>Profile Information</h3>
+          <form id="profile-form" onsubmit="updateProfile(event)">
+            <div class="form-group">
+              <label for="profile-username">Username</label>
+              <input type="text" id="profile-username" readonly>
+            </div>
+            <div class="form-group">
+              <label for="profile-email">Email</label>
+              <input type="email" id="profile-email">
+            </div>
+            <div class="form-group">
+              <label for="profile-fullname">Full Name</label>
+              <input type="text" id="profile-fullname">
+            </div>
+            <div class="form-group">
+              <label for="profile-password">New Password (leave blank to keep current)</label>
+              <input type="password" id="profile-password">
+            </div>
+            <button type="submit" class="btn btn-primary">Update Profile</button>
+          </form>
+          <div id="profile-message" class="message"></div>
+        </div>
+
+        <div class="profile-card">
+          <h3>Account Information</h3>
+          <div class="info-item">
+            <span class="info-label">Role:</span>
+            <span id="profile-role" class="info-value"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Created:</span>
+            <span id="profile-created" class="info-value"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Last Login:</span>
+            <span id="profile-last-login" class="info-value"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="modal-title">Modal Title</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Modal content will be injected here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Container -->
+  <div id="notification-container" class="notification-container"></div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
